@@ -1,7 +1,15 @@
 import { useState, useEffect } from 'react';
 import dayjs from 'dayjs';
 import styles from './index.module.css'
-import Map from '@/components/map';
+import dynamic from 'next/dynamic';
+
+const DynamicMap = dynamic(
+  () => import('@/components/map'),  // 指向原始 Map 组件的路径
+  { 
+    ssr: false,  // 禁用服务器端渲染
+    loading: () => <div>地图加载中...</div>  // 可选的加载状态
+  }
+);
 
 // 假用戶資料
 const users = [
@@ -33,16 +41,22 @@ interface CheckIn {
 
 function Home() {
   const [user, setUser] = useState<User | null>(() => {
-    const savedUser = localStorage.getItem('user');
+    if (typeof window !== 'undefined') {
+      const savedUser = localStorage.getItem('user');
     return savedUser ? JSON.parse(savedUser) : null;
+    }
+    return null  
   });
 
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [location, setLocation] = useState<Location | null>(null);
   const [checkIns, setCheckIns] = useState<CheckIn[]>(() => {
-    const savedCheckIns = localStorage.getItem('checkIns');
-    return savedCheckIns ? JSON.parse(savedCheckIns) : [];
+    if(typeof window !== 'undefined'){
+      const savedCheckIns = localStorage.getItem('checkIns');
+      return savedCheckIns ? JSON.parse(savedCheckIns) : [];
+    }
+   return []
   });
 
   const [error, setError] = useState<string>('');
@@ -128,7 +142,7 @@ function Home() {
           <p>目前位置: {location ? `${location.lat.toFixed(6)}, ${location.lng.toFixed(6)}` : '未取得'}</p>
           <p>打卡地點: {CHECKIN_LOCATION.lat.toFixed(6)}, {CHECKIN_LOCATION.lng.toFixed(6)}</p>
           <p>允許範圍: {CHECKIN_RADIUS} 公尺</p>
-          <Map location={location} checkInLocation={CHECKIN_LOCATION} radius={CHECKIN_RADIUS} />
+          <DynamicMap location={location} checkInLocation={CHECKIN_LOCATION} radius={CHECKIN_RADIUS} />
     
           {isWithinRange !== null && (
             <p style={{ color: isWithinRange ? 'green' : 'red' }}>
