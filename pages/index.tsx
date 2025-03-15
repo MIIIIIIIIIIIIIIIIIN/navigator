@@ -13,11 +13,12 @@ const DynamicMap = dynamic(
 
 // 假用戶資料
 const users = [
-  { id: 1, email: 'user@gmail.com', password: '123456' ,name: 'Liam'}
+  { id: 1, email: 'user@gmail.com', password: '123456' ,name: 'Liam'},
+  {id: 2, email: 'work@gmail.com', password: '123456' ,name: 'workkai'}
 ];
 
 const CHECKIN_RADIUS = 100; // 允許打卡範圍 (公尺)
-const CHECKIN_LOCATION = { lat: 24.998527, lng: 121.457033 }; // 預設打卡地點
+const CHECKIN_LOCATION = { lat: 24.94503412597114, lng: 121.37714610027648 }; // 預設打卡地點
 
 // 定義地點型別
 interface Location {
