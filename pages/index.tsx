@@ -21,8 +21,7 @@ const users = [
 ];
 
 const CHECKIN_RADIUS = 100; // 允許打卡範圍 (公尺)
-const CHECKIN_LOCATION = { lat: 24.998527, lng: 121.457033 }; // 預設打卡地點
-
+const CHECKIN_LOCATION = { lat: 25.0038216362712, lng: 121.46082040940178 }; // 預設打卡地點
 // 定義地點型別
 interface Location {
   lat: number;
