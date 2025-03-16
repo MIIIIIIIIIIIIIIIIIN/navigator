@@ -11,6 +11,48 @@
     /* border: 1px solid #101010; */
     background-color: rgb(255, 255, 255);
     /* overflow-y: auto; */
+    position: relative;
+}
+.header{
+    height: 80px;
+    /* border: 1px solid #333; */
+    display: flex;
+    align-items: center;
+    padding: 0px 30px;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 120;
+    background-color: #fff;
+}
+.userStatus{
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: chartreuse;
+    margin-right: 10px;
+}
+.user{
+    display: flex;
+    align-items: center;
+}
+.imgOutline{
+    width: 30px;
+    height: 30px;
+    background-color: #999;
+    border-radius: 50%;
+    margin-right: 8px;
+}
+
+.info{
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
+}
+
+.info_main{
+    margin: 40px 0 30px 0;
+    
 }
 
 /* .container::after{
@@ -32,7 +74,8 @@
     padding: 10px 0;
 }
 .container_info{
-
+    flex-grow: 1;
+    display: flex;
 }
 .container_map{
     margin: auto;
@@ -41,14 +84,94 @@
     overflow: hidden;
 }
 
-.container_checkBottom{
-    padding: 20px;
-    width: 50%;
-    background-color: #fff;
+.container_checkBotton{
+    
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    color: #fff;
+    font-size: 20px;
     cursor: pointer;
     margin-top: 30px;
+    line-height: 50px;
+    letter-spacing: 10px;
+    text-align: center;
+    text-indent: 10px;
+    position: absolute;
+    bottom: 100px;
+    left: calc(50% - 50px);
+    
+    border: none;
 }
 
 .time{
-    font-size: 30px;
+    font-size: 50px;
+    
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.distance{
+    color: #999;
+    /* flex-grow: 1; */
+
+}
+.reset{
+    padding: 10px;
+    width: 100px;
+    border-radius: 10px;
+    margin: 10px auto;
+}
+
+
+.menu{
+    position: absolute;
+    z-index: 100;
+    top: 0px;
+    transition: 2s;
+}
+
+
+
+
+
+
+
+
+.loginContainer{
+    display: flex;
+    align-items: center;
+    background-color: #eeff00;
+}
+
+.loginInput{
+    margin-top: 150px;
+    background-color: rgb(255, 255, 255);
+    border-radius: 40px 40px 0 0 ;
+    display: flex;
+    flex-direction: column;
+    width: 100vw;
+    align-items: center;
+    height: calc(100vh - 150px);
+    /* justify-content: center; */
+    padding-top: 100px;
+}
+
+.loginLogo{
+    font-size: 45px;
+    margin-bottom: 30px;
+}
+
+.input{
+    padding: 10px;
+    width: 50%;
+    margin-bottom: 10px;
+    border-radius: 20px;
+}
+
+.loginBotton{
+    margin-top: 10px;
+    padding: 5px 10px;
+    border-radius: 10px;
+
 }

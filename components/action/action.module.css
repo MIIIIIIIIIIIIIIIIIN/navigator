@@ -1,0 +1,29 @@
+
+.actions{
+    width: 100vw;
+    height: calc(80vh - 80px);
+    border-radius: 20px;
+    top: 0;
+    background-color: #383838;
+    border: 1px solid   #333;
+    padding: 10px;
+    /* position: absolute; */
+    z-index: 10;
+    /* padding: 50px 0; */
+    /* color: #fff; */
+
+}
+
+.list{
+    display: flex;
+    flex-direction: column;
+}
+.item{
+    
+    /* flex-basis: 80px; */
+    border-radius: 20px;
+    padding: 30px;
+    border-bottom: 1px solid #e7e7e7;
+    background-color: #ededed;
+    margin-bottom: 10px;
+}

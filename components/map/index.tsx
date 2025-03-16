@@ -1,18 +1,13 @@
-import React, { useEffect, useRef } from 'react';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
+'use client'; // 標記為客戶端組件
 
-// 確保 Leaflet 圖標正確顯示
-import icon from 'leaflet/dist/images/marker-icon.png';
-import iconShadow from 'leaflet/dist/images/marker-shadow.png';
+import React, { useEffect, useRef, useState } from 'react';
 
-const DefaultIcon = L.icon({
-  iconUrl: icon.src,
-  shadowUrl: iconShadow.src,
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-});
-L.Marker.prototype.options.icon = DefaultIcon;
+// 添加 Google Maps API 的類型定義
+declare global {
+  interface Window {
+    google: typeof google;
+  }
+}
 
 interface MapProps {
   location: { lat: number; lng: number } | null;
@@ -21,71 +16,116 @@ interface MapProps {
 }
 
 const Map: React.FC<MapProps> = ({ location, checkInLocation, radius }) => {
-  const mapRef = useRef<HTMLDivElement | null>(null);
-  const mapInstance = useRef<L.Map | null>(null);
-  const markersRef = useRef<L.LayerGroup | null>(null); // 存放標記的 LayerGroup
-
+  const mapRef = useRef<HTMLDivElement>(null);
+  const mapInstance = useRef<google.maps.Map | null>(null);
+  const markersRef = useRef<Array<google.maps.Marker | google.maps.Circle>>([]);
+  const [isClient, setIsClient] = useState(false);
+  
+  // 確保組件只在客戶端渲染
   useEffect(() => {
-    if (!location || !mapRef.current) return;
-
-    // **初始化地圖 (僅初始化一次)**
-    if (!mapInstance.current) {
-      mapInstance.current = L.map(mapRef.current).setView([location.lat, location.lng], 15);
-
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-        maxZoom: 18,
-      }).addTo(mapInstance.current);
-
-      markersRef.current = L.layerGroup().addTo(mapInstance.current); // 初始化 LayerGroup
-    }
-
-    // **避免 LayerGroup 被清空**
-    if (!markersRef.current) {
-      markersRef.current = L.layerGroup().addTo(mapInstance.current);
-    }
-
-    // **清除舊的標記**
-    markersRef.current.clearLayers();
-
-    // **新增使用者標記**
-    const userMarker = L.marker([location.lat, location.lng]).bindPopup('打卡人').openPopup();
-    markersRef.current.addLayer(userMarker);
-
-    // **新增打卡地點和範圍圓圈**
-    if (checkInLocation) {
-      const checkInMarker = L.marker([checkInLocation.lat, checkInLocation.lng]).bindPopup('打卡地點');
-      const circle = L.circle([checkInLocation.lat, checkInLocation.lng], {
-        radius: radius,
-        color: 'blue',
-        fillColor: 'blue',
-        fillOpacity: 0.3,
+    setIsClient(true);
+  }, []);
+  
+  useEffect(() => {
+    // 確保我們在客戶端環境，並且有位置資訊和DOM元素
+    if (!isClient || !location || !mapRef.current) return;
+    
+    // 確保 Google Maps API 已加載
+    const loadGoogleMaps = () => {
+      // 這裡我們已經確認了 mapRef.current 不為 null
+      const mapElement = mapRef.current;
+      
+      // 初始化地圖 (僅初始化一次)
+      if (!mapInstance.current && mapElement) {
+        mapInstance.current = new window.google.maps.Map(mapElement, {
+          center: { lat: location.lat, lng: location.lng },
+          zoom: 15,
+        });
+      }
+      
+      // 清除舊的標記
+      markersRef.current.forEach(marker => marker.setMap(null));
+      markersRef.current = [];
+      
+      // 新增使用者標記
+      const userMarker = new window.google.maps.Marker({
+        position: { lat: location.lat, lng: location.lng },
+        map: mapInstance.current,
+        title: '打卡人',
       });
-
-      markersRef.current.addLayer(checkInMarker);
-      markersRef.current.addLayer(circle);
-
-      // **使用 setTimeout 延遲 fitBounds，避免標記剛加入時地圖異常變動**
-      setTimeout(() => {
-        if (mapInstance.current) {
-          const bounds = L.latLngBounds([location, checkInLocation]);
-          mapInstance.current.fitBounds(bounds.pad(0.3));
-        }
-      }, 300);
-    }
-
-    return () => {
-      if (mapInstance.current) {
-        mapInstance.current.remove();
-        mapInstance.current = null;
+      
+      // 新增使用者資訊視窗
+      const userInfoWindow = new window.google.maps.InfoWindow({
+        content: '打卡人'
+      });
+      
+      userInfoWindow.open(mapInstance.current, userMarker);
+      markersRef.current.push(userMarker);
+      
+      // 新增打卡地點和範圍圓圈
+      if (checkInLocation) {
+        const checkInMarker = new window.google.maps.Marker({
+          position: { lat: checkInLocation.lat, lng: checkInLocation.lng },
+          map: mapInstance.current,
+          title: '打卡地點',
+        });
+        
+        const checkInInfoWindow = new window.google.maps.InfoWindow({
+          content: '打卡地點'
+        });
+        
+        checkInInfoWindow.open(mapInstance.current, checkInMarker);
+        markersRef.current.push(checkInMarker);
+        
+        // 繪製範圍圓圈
+        const circle = new window.google.maps.Circle({
+          strokeColor: '#0000FF',
+          strokeOpacity: 0.8,
+          strokeWeight: 2,
+          fillColor: '#0000FF',
+          fillOpacity: 0.3,
+          map: mapInstance.current,
+          center: checkInLocation,
+          radius: radius,
+        });
+        
+        markersRef.current.push(circle);
+        
+        // 設置地圖視圖以包含所有標記
+        setTimeout(() => {
+          if (mapInstance.current) {
+            const bounds = new window.google.maps.LatLngBounds();
+            bounds.extend(new window.google.maps.LatLng(location.lat, location.lng));
+            bounds.extend(new window.google.maps.LatLng(checkInLocation.lat, checkInLocation.lng));
+            mapInstance.current.fitBounds(bounds);
+            
+            // 適當地調整縮放級別
+            const currentZoom = mapInstance.current.getZoom();
+            if (currentZoom !== undefined) {
+              mapInstance.current.setZoom(currentZoom - 0.5);
+            }
+          }
+        }, 300);
       }
     };
-  }, [location, checkInLocation, radius]);
-
-  if (!location) return <div>請先獲取位置</div>;
-
-  return <div ref={mapRef} style={{ height: '300px', width: '100%' }}></div>;
+    
+    // 檢查 Google Maps API 是否已載入
+    if (window.google && window.google.maps) {
+      loadGoogleMaps();
+    } else {
+      console.error('Google Maps API 未載入，請確保您已在HTML中引入Google Maps JavaScript API');
+    }
+    
+    // 組件卸載時清理
+    return () => {
+      markersRef.current.forEach(marker => marker.setMap(null));
+    };
+  }, [isClient, location, checkInLocation, radius]);
+  
+  // 在服務器端渲染和客戶端初始化前顯示佔位符
+  if (!isClient || !location) return <div>請先獲取位置</div>;
+  
+  return <div  ref={mapRef} style={{ height: 'calc(100vh - 339px)', width: '100%' , opacity:'80%'}}></div>;
 };
 
 export default Map;
-  
